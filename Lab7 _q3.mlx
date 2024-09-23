@@ -1,0 +1,49 @@
+f = @(t) 1./ (1 + 25*t.^2);
+n_d = [30,50,100];
+degrees = [10,29,49,99];
+for i = 1:length(n_d)
+    t{i} = linspace(-1,1,n_d(i));
+    y{i} = f(t{i});
+end
+for i = 1:length(n_d)
+    for j = 1:length(degrees)
+        % Vandermonde matrix
+        A{i,j} = vander(t{i}, degrees(j));
+
+        % Right-hand side vector
+        b{i,j} = y{i};
+
+        % QR decomposition
+        x_qr{i,j} = A{i,j} \ b{i,j}';  % Transpose b{i,j}
+
+        % Normal equations
+        x_normal{i,j} = (A{i,j}' * A{i,j}) \ (A{i,j}' * b{i,j}');
+
+        % Residual norm
+        resid_qr(i,j) = norm(A{i,j} * x_qr{i,j} - b{i,j});
+        resid_normal(i,j) = norm(A{i,j} * x_normal{i,j} - b{i,j});
+    end
+end
+for i = 1:length(n_d)
+    figure;
+    plot(t{i}, y{i}, 'o');
+    hold on;
+
+    for j = 1:length(degrees)
+        p_qr{i,j} = polyval(flipud(x_qr{i,j}), t{i});
+        p_normal{i,j} = polyval(flipud(x_normal{i,j}), t{i});
+        plot(t{i}, p_qr{i,j}, '-', 'DisplayName', sprintf('QR, Degree %d', degrees(j)));
+        plot(t{i}, p_normal{i,j}, '--', 'DisplayName', sprintf('Normal, Degree %d', degrees(j)));
+    end
+
+    plot(t{i}, f(t{i}), ':', 'DisplayName', 'Function');
+    legend;
+    title(sprintf('%d Data Points', n_d(i)));
+    xlabel('t');
+    ylabel('f(t)');
+
+    % Condition number analysis
+    cond_A = cond(A{i,1});
+    cond_AtA = cond(A{i,1}' * A{i,1});
+    fprintf('Condition number of A: %.2f\n', cond_A);
+    f
