@@ -46,4 +46,5 @@ for i = 1:length(n_d)
     cond_A = cond(A{i,1});
     cond_AtA = cond(A{i,1}' * A{i,1});
     fprintf('Condition number of A: %.2f\n', cond_A);
-    f
+    fprintf('Condition number of A^T * A: %.2f\n', cond_AtA);
+end
